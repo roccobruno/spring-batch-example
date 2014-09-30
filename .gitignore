@@ -1,0 +1,9 @@
+.idea/
+.idea_modules/
+target/
+.DS_Store
+gradlew-sbt-*/
+src/load/resources/datagen/*.csv
+*.log
+logs/
+*.iml
