@@ -10,9 +10,17 @@
 
 
 
-<context:component-scan base-package="com.springapp"/>
-    <import resource="spring-user.xml"/>
-    <import resource="spring-db.xml" />
 
-    <import resource="spring-job.xml"/>
+
+    <task:scheduler id="scheduler" pool-size="1"/>
+
+
+    <bean id="jobService" class="com.springapp.batch.scheduler.service.JobService"/>
+
+
+    <task:scheduled-tasks scheduler="scheduler">
+        <task:scheduled ref="jobService" method="process" fixed-delay="5000" initial-delay="2000"/>
+        <!--<task:scheduled ref="jobService" method="process" cron="*/5 * * * * MON-FRI" />-->
+    </task:scheduled-tasks>
+
 </beans>

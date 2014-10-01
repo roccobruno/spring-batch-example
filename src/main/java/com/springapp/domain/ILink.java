@@ -1,14 +1,11 @@
-package com.springapp.batch.scheduler.service;
+package com.springapp.domain;
 
 /**
  * Created with IntelliJ IDEA.
  * User: r.bruno@london.net-a-porter.com
  * Date: 01/10/2014
- * Time: 09:13
+ * Time: 23:33
  * To change this template use File | Settings | File Templates.
  */
-public interface IAccountService {
-
-    void process();
-
+public interface ILink {
 }
