@@ -49,12 +49,12 @@ public class AccountServiceImplTest {
         user.setDataRichiesta(new Date());
         user.setFlagRichiestaInoltrata(ACCOUNT_FLAG_VALUES.WITHOUT_ACCOUNT.getId());
 
-        when(mopHttpClient.createAccount(Mockito.any(Account.class))).thenReturn(true);
-        when(mopHttpClient.addUserToAccount(Mockito.any(UserAccount.class))).thenReturn(true);
+        when(mopHttpClient.createMopAccount(Mockito.any(Account.class))).thenReturn(true);
+        when(mopHttpClient.addUserToMopAccount(Mockito.any(UserAccount.class))).thenReturn(true);
 
        Account account = accountService.createAccount(user);
-           verify(mopHttpClient,times(1)).createAccount(any(Account.class));
-        verify(mopHttpClient,times(1)).addUserToAccount(any(UserAccount.class));
+           verify(mopHttpClient,times(1)).createMopAccount(any(Account.class));
+        verify(mopHttpClient,times(1)).addUserToMopAccount(any(UserAccount.class));
         assertNotNull(account);
         assertEquals("brnrcc80l13g786I",account.getName());
         assertEquals("rocco@msn.com",account.getContact().getEmail());

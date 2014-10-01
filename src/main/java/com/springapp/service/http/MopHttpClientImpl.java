@@ -55,7 +55,7 @@ public class MopHttpClientImpl implements MopHttpClient {
     }
 
     @Override
-    public boolean createAccount(Account account) {
+    public boolean createMopAccount(Account account) {
         String content = getPostBody(account);
         String url = getCompleteUrlToCreateAccount(host, port, username, password, account.getName());
 
@@ -66,7 +66,7 @@ public class MopHttpClientImpl implements MopHttpClient {
     }
 
     @Override
-    public boolean addUserToAccount(UserAccount userAccount) {
+    public boolean addUserToMopAccount(UserAccount userAccount) {
         String content = getPostBody(userAccount);
         String url = getCompleteUrlToAddUserToAccount(host, port, username, password, userAccount.getName());
         boolean docSent = doPut(url, content);

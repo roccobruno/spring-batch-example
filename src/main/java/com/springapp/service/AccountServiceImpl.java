@@ -24,13 +24,13 @@ public class AccountServiceImpl implements IAccountService{
         String password = createPassword();
         Account account = buildAccount(user,password);
 
-        boolean success = mopHttpClient.createAccount(account);
+        boolean success = mopHttpClient.createMopAccount(account);
         if(!success)
             throw new AccountCreationException("Account creation step failed for account:"+account);
         else {
             // I ll add the user to the account
             UserAccount userAccount = buildUserAccount(user,password);
-            success = mopHttpClient.addUserToAccount(userAccount);
+            success = mopHttpClient.addUserToMopAccount(userAccount);
         }
 
         return account;

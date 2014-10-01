@@ -89,7 +89,7 @@ public class MopHttpClientImplTest {
 
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
 
-        boolean res = mopHttpClient.createAccount(account);
+        boolean res = mopHttpClient.createMopAccount(account);
         assertTrue(res);
         server.verify(HttpRequest.request().withPath("/api/v1.0/accounts/uMop01").withBody(xmlExpected), Times.exactly(1));
     }
@@ -131,7 +131,7 @@ public class MopHttpClientImplTest {
 
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
 
-        boolean res = mopHttpClient.addUserToAccount(userAccount);
+        boolean res = mopHttpClient.addUserToMopAccount(userAccount);
         assertTrue(res);
         server.verify(HttpRequest.request().withPath("/api/v1.0/accounts/uMop01/users/uMop01").withBody(xmlTomatch), Times.exactly(1));
     }

@@ -12,8 +12,8 @@ import com.springapp.domain.UserAccount;
  */
 public interface MopHttpClient {
 
-    public boolean createAccount(Account account);
-    public boolean addUserToAccount(UserAccount userAccount);
+    public boolean createMopAccount(Account account);
+    public boolean addUserToMopAccount(UserAccount userAccount);
     public String getHost();
     public int getPort();
 }

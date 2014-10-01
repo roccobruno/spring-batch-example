@@ -52,7 +52,7 @@ public class JobService implements IJobService {
                 //crea account
                 account = accountService.createAccount(user);
             } catch (AccountCreationException e) {
-                //TODO createAccount exception handling
+                //TODO createMopAccount exception handling
                 e.printStackTrace();
             }
             log.debug("finished processing : ACCOUNT CREATED : {}",account);
