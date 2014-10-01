@@ -10,6 +10,24 @@ package com.springapp.batch.scheduler.service;
 public class AccountService implements IAccountService {
 
 
+    /**
+     * Step da eseguire:
+     *
+     * 1) read all the records with flag 'WithAccount' false
+     * 2) For each record :
+     *
+     *           2.1) create account invoking rest service
+     *           2.2) set the flag 'WithAccount' to true for the record
+     *
+     *
+     *
+     *
+     *
+     */
+
+
+
+
     @Override
     public void process() {
         System.out.println("CIAO");
