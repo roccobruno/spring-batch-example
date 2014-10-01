@@ -7,3 +7,4 @@ src/load/resources/datagen/*.csv
 *.log
 logs/
 *.iml
+*.jks
