@@ -1,5 +1,9 @@
 package com.springapp.domain;
 
+import com.springapp.domain.http.user.PasswordCredentials;
+import com.springapp.domain.http.user.UserAccount;
+import com.springapp.domain.http.user.UserLink;
+import com.springapp.domain.http.user.UserMetadata;
 import junit.framework.Assert;
 import org.junit.Test;
 

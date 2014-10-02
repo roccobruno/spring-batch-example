@@ -2,6 +2,18 @@ package com.springapp.service.http;
 
 import com.springapp.config.ConfigTest;
 import com.springapp.domain.*;
+import com.springapp.domain.http.account.Account;
+import com.springapp.domain.http.account.AccountLink;
+import com.springapp.domain.http.account.AccountMetadata;
+import com.springapp.domain.http.account.Contact;
+import com.springapp.domain.http.subscription.Subscription;
+import com.springapp.domain.http.subscription.Subscriptions;
+import com.springapp.domain.http.transferconfiguration.TransferConfiguration;
+import com.springapp.domain.http.transferconfiguration.TransferConfigurations;
+import com.springapp.domain.http.user.PasswordCredentials;
+import com.springapp.domain.http.user.UserAccount;
+import com.springapp.domain.http.user.UserLink;
+import com.springapp.domain.http.user.UserMetadata;
 import org.apache.http.HttpStatus;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,10 +24,12 @@ import org.mockserver.client.proxy.Times;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
+import org.mockserver.model.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 /**
@@ -92,6 +106,89 @@ public class MopHttpClientImplTest {
         boolean res = mopHttpClient.createMopAccount(account);
         assertTrue(res);
         server.verify(HttpRequest.request().withPath("/api/v1.0/accounts/uMop01").withBody(xmlExpected), Times.exactly(1));
+    }
+
+
+    @Test
+    public void getSubscriptionIdForTheUser() throws Exception {
+        HttpRequest request = HttpRequest.request().withMethod("GET").withPath("/api/v1.0/subscriptions").withQueryStringParameter(
+                new Parameter("limit","1")).withQueryStringParameter(new Parameter("application","RoutingToMOP"))
+                .withQueryStringParameter(new Parameter("account","uMop01")
+        );
+        mopHttpClient.setUseSecureConnection(false);
+        server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_OK).withBody("<subscriptions>" +
+                "<subscription><id>8aa6c33c477cf5b00148ad4c770801d2</id><account>uMop01</account>" +
+                "<application>RoutingToMOP</application>" +
+                "<subscriberID>uMop01</subscriberID>" +
+                "<folder>/Outbox</folder>" +
+                "<pta.on.success.OUT.do.delete>true</pta.on.success.OUT.do.delete>" +
+                "<metadata>" +
+                "<links>" +
+                "<account>https://vm-sts-coll01:444/api/v1.0/accounts/uMop01</account>" +
+                "<application>https://vm-sts-coll01:444/api/v1.0/applications/RoutingToMOP</application>" +
+                "<transferConfigurations>https://vm-sts-coll01:444/api/v1.0/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/transferConfigurations</transferConfigurations>" +
+                "<schedules>https://vm-sts-coll01:444/api/v1.0/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/schedules</schedules>" +
+                "</links>" +
+                "</metadata>" +
+                "</subscription>" +
+                "</subscriptions>"));
+
+        String id = mopHttpClient.getSubscriptionIdForTheUser("RoutingToMOP","uMop01");
+        assertEquals("8aa6c33c477cf5b00148ad4c770801d2",id);
+    }
+
+    @Test
+    public void createSubscriptionForTheUser()throws Exception {
+        Subscriptions subscriptions = new Subscriptions();
+        Subscription subscription = new Subscription();
+        subscriptions.setSubscription(subscription);
+        subscription.setAccount("uMop01");
+        subscription.setApplication("RoutingToMOP");
+        subscription.setSubscriberID("uMop01");
+        subscription.setFolder("/Outbox");
+
+        String xmlTomatch = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><subscriptions>" +
+                "<subscription><account>uMop01</account>" +
+                "<application>RoutingToMOP</application>" +
+                "<subscriberID>uMop01</subscriberID>" +
+                "<folder>/Outbox</folder>" +
+                "<pta.on.success.OUT.do.delete>true</pta.on.success.OUT.do.delete>" +
+                "</subscription>" +
+                "</subscriptions>";
+
+        HttpRequest request = HttpRequest.request().withMethod("POST").withPath("/api/v1.0/subscriptions").withBody(xmlTomatch);
+        mopHttpClient.setUseSecureConnection(false);
+
+
+        server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
+
+        boolean res = mopHttpClient.createSubscriptionForTheUser(subscriptions);
+        assertTrue(res);
+        server.verify(HttpRequest.request().withPath("/api/v1.0/subscriptions").withBody(xmlTomatch), Times.exactly(1));
+
+    }
+
+    @Test
+    public void createTransferConfigurationForTheUser() throws Exception  {
+        TransferConfigurations transferConfigurations = new TransferConfigurations();
+        transferConfigurations.setTransferConfiguration(new TransferConfiguration());
+
+        String xmlToMatch = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><transferConfigurations><transferConfiguration>" +
+                "<tag>PARTNER-IN</tag>" +
+                "<direction>0</direction>" +
+                "<site>TS_FTP_RoutingMOP</site>" +
+                "</transferConfiguration>" +
+                "</transferConfigurations>";
+
+        HttpRequest request = HttpRequest.request().withMethod("POST").withPath("/api/v1.1/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/transferConfigurations").withBody(xmlToMatch);
+        mopHttpClient.setUseSecureConnection(false);
+
+
+        server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
+
+        boolean res = mopHttpClient.createTransferConfigurationForTheUser(transferConfigurations,"8aa6c33c477cf5b00148ad4c770801d2");
+        assertTrue(res);
+        server.verify(HttpRequest.request().withPath("/api/v1.1/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/transferConfigurations").withBody(xmlToMatch), Times.exactly(1));
     }
 
     @Test

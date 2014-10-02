@@ -1,36 +1,37 @@
-package com.springapp.domain;
+package com.springapp.domain.http.user;
 
 /**
  * Created with IntelliJ IDEA.
  * User: r.bruno@london.net-a-porter.com
  * Date: 01/10/2014
- * Time: 23:45
+ * Time: 21:26
  * To change this template use File | Settings | File Templates.
  */
-public class AccountMetadata {
+public class UserMetadata {
+
     @Override
     public String toString() {
-        return "AccountMetadata{" +
+        return "UserMetadata{" +
                 "links=" + links +
                 '}';
     }
 
-    public AccountLink getLinks() {
+    public UserLink getLinks() {
         return links;
     }
 
-    public void setLinks(AccountLink links) {
+    public void setLinks(UserLink links) {
         this.links = links;
     }
 
-    private AccountLink links;
+    private UserLink links;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AccountMetadata that = (AccountMetadata) o;
+        UserMetadata that = (UserMetadata) o;
 
         if (links != null ? !links.equals(that.links) : that.links != null) return false;
 

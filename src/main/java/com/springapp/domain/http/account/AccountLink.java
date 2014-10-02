@@ -1,4 +1,6 @@
-package com.springapp.domain;
+package com.springapp.domain.http.account;
+
+import com.springapp.domain.ILink;
 
 /**
  * Created with IntelliJ IDEA.

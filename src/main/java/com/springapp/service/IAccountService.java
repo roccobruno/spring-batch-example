@@ -1,6 +1,6 @@
 package com.springapp.service;
 
-import com.springapp.domain.Account;
+import com.springapp.domain.http.account.Account;
 import com.springapp.domain.User;
 
 /**

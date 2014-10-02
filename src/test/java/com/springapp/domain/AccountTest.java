@@ -1,5 +1,9 @@
 package com.springapp.domain;
 
+import com.springapp.domain.http.account.Account;
+import com.springapp.domain.http.account.AccountLink;
+import com.springapp.domain.http.account.AccountMetadata;
+import com.springapp.domain.http.account.Contact;
 import junit.framework.Assert;
 import org.junit.Test;
 

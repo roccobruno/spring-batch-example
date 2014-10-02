@@ -1,7 +1,7 @@
 package com.springapp.batch.scheduler.service;
 
 import com.springapp.domain.ACCOUNT_FLAG_VALUES;
-import com.springapp.domain.Account;
+import com.springapp.domain.http.account.Account;
 import com.springapp.domain.User;
 import com.springapp.service.AccountCreationException;
 import com.springapp.service.IAccountService;

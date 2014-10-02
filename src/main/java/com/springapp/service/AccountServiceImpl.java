@@ -1,6 +1,17 @@
 package com.springapp.service;
 
 import com.springapp.domain.*;
+import com.springapp.domain.http.account.Account;
+import com.springapp.domain.http.account.AccountLink;
+import com.springapp.domain.http.account.AccountMetadata;
+import com.springapp.domain.http.account.Contact;
+import com.springapp.domain.http.subscription.Subscription;
+import com.springapp.domain.http.subscription.Subscriptions;
+import com.springapp.domain.http.transferconfiguration.TransferConfigurations;
+import com.springapp.domain.http.user.PasswordCredentials;
+import com.springapp.domain.http.user.UserAccount;
+import com.springapp.domain.http.user.UserLink;
+import com.springapp.domain.http.user.UserMetadata;
 import com.springapp.service.http.MopHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,10 +43,36 @@ public class AccountServiceImpl implements IAccountService{
             UserAccount userAccount = buildUserAccount(user,password);
             success = mopHttpClient.addUserToMopAccount(userAccount);
         }
+        ////create subscription RoutingToMOP
+        createSubscriptionRoutingToMOP(account.getName());
 
         //TODO add calls for RoutingToMOP and for RoutingFromMOP
 
         return account;
+    }
+
+    private void createSubscriptionRoutingToMOP(String accountName) throws AccountCreationException{
+
+        //create subscription
+        Subscriptions subscriptions = new Subscriptions();
+        Subscription subscription = new Subscription();
+        subscriptions.setSubscription(subscription);
+        subscription.setAccount(accountName);
+        subscription.setApplication("RoutingToMOP");
+        subscription.setSubscriberID(accountName);
+
+        boolean result = mopHttpClient.createSubscriptionForTheUser(subscriptions);
+        if(!result)
+            throw new AccountCreationException("Subscription creation step failed for accountName:"+accountName);
+
+        //get subId
+        String subId = mopHttpClient.getSubscriptionIdForTheUser("RoutingToMOP",accountName);
+
+        //create transferConfiguration
+        result = mopHttpClient.createTransferConfigurationForTheUser(new TransferConfigurations(),subId);
+        if(!result)
+            throw new AccountCreationException("TransferConfiguration creation step failed for accountName:"+accountName);
+
     }
 
     private UserAccount buildUserAccount(User user,String password) {

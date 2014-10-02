@@ -1,10 +1,11 @@
-package com.springapp.domain;
+package com.springapp.domain.http.account;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.springapp.domain.IToXML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ import java.io.IOException;
  */
 
 @JacksonXmlRootElement(localName = "account")
-public class Account implements IToXML{
+public class Account implements IToXML {
     static Logger log = LoggerFactory.getLogger(Account.class);
 
     private String name;

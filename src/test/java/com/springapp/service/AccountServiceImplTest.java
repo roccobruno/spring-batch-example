@@ -1,9 +1,11 @@
 package com.springapp.service;
 
 import com.springapp.domain.ACCOUNT_FLAG_VALUES;
-import com.springapp.domain.Account;
+import com.springapp.domain.http.account.Account;
 import com.springapp.domain.User;
-import com.springapp.domain.UserAccount;
+import com.springapp.domain.http.subscription.Subscriptions;
+import com.springapp.domain.http.transferconfiguration.TransferConfigurations;
+import com.springapp.domain.http.user.UserAccount;
 import com.springapp.service.http.MopHttpClientImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,10 +53,15 @@ public class AccountServiceImplTest {
 
         when(mopHttpClient.createMopAccount(Mockito.any(Account.class))).thenReturn(true);
         when(mopHttpClient.addUserToMopAccount(Mockito.any(UserAccount.class))).thenReturn(true);
-
+        when(mopHttpClient.createSubscriptionForTheUser(any(Subscriptions.class))).thenReturn(true);
+        when(mopHttpClient.getSubscriptionIdForTheUser("RoutingToMOP","brnrcc80l13g786I")).thenReturn("subId");
+        when(mopHttpClient.createTransferConfigurationForTheUser(new TransferConfigurations(),"subId")).thenReturn(true);
        Account account = accountService.createAccount(user);
            verify(mopHttpClient,times(1)).createMopAccount(any(Account.class));
         verify(mopHttpClient,times(1)).addUserToMopAccount(any(UserAccount.class));
+        verify(mopHttpClient,times(1)).createSubscriptionForTheUser(any(Subscriptions.class));
+        verify(mopHttpClient,times(1)).getSubscriptionIdForTheUser("RoutingToMOP", "brnrcc80l13g786I");
+        verify(mopHttpClient,times(1)) .createTransferConfigurationForTheUser(new TransferConfigurations(),"subId");
         assertNotNull(account);
         assertEquals("brnrcc80l13g786I",account.getName());
         assertEquals("rocco@msn.com",account.getContact().getEmail());

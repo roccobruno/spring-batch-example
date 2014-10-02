@@ -1,9 +1,11 @@
 package com.springapp.service.http;
 
 
-import com.springapp.domain.Account;
+import com.springapp.domain.http.account.Account;
 import com.springapp.domain.IToXML;
-import com.springapp.domain.UserAccount;
+import com.springapp.domain.http.subscription.Subscriptions;
+import com.springapp.domain.http.transferconfiguration.TransferConfigurations;
+import com.springapp.domain.http.user.UserAccount;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -57,38 +60,83 @@ public class MopHttpClientImpl implements MopHttpClient {
     @Override
     public boolean createMopAccount(Account account) {
         String content = getPostBody(account);
-        String url = getCompleteUrlToCreateAccount(host, port, username, password, account.getName());
-
-       boolean docSent = doPut(url, content);
-
-
-        return docSent;
-    }
-
-    @Override
-    public boolean addUserToMopAccount(UserAccount userAccount) {
-        String content = getPostBody(userAccount);
-        String url = getCompleteUrlToAddUserToAccount(host, port, username, password, userAccount.getName());
+        String url = getCompleteUrlToCreateAccount(account.getName());
         boolean docSent = doPut(url, content);
         return docSent;
     }
 
 
-    private String getCompleteUrlToAddUserToAccount(String host, int port, String username, String password, String accountUsername) {
+
+    @Override
+    public boolean addUserToMopAccount(UserAccount userAccount) {
+        String content = getPostBody(userAccount);
+        String url = getCompleteUrlToAddUserToAccount( userAccount.getName());
+        boolean docSent = doPut(url, content);
+        return docSent;
+    }
+
+    @Override
+    public boolean createSubscriptionForTheUser(Subscriptions subscriptions) {
+        String content = getPostBody(subscriptions);
+        String url = getCompleteUrlToSubscriptions();
+        return doPost(url,content);
+    }
+
+    @Override
+    public boolean createTransferConfigurationForTheUser(TransferConfigurations transferConfigurations,String subId) {
+        String content = getPostBody(transferConfigurations);
+        String url = getCompleteUrlToTransferConfiguration(subId);
+        boolean result = doPost(url,content);
+        return result;
+    }
+
+    private String getCompleteUrlToTransferConfiguration(String subId) {
+
         StringBuilder builder = new StringBuilder(getBaseUrl(host,port,username,password));
+        builder.append("/api/v1.1/subscriptions/")
+                .append(subId).append("/transferConfigurations");
+        return builder.toString();
+    }
+
+
+    @Override
+    public String getSubscriptionIdForTheUser(String application, String accountName) {
+        String url = getCompleteUrlToSubscriptions();
+        StringBuilder builder = new StringBuilder(url);
+        builder.append("?limit=1&application=").append(application)
+                .append("&account=").append(accountName);
+        String bodyResponse = doGet(builder.toString());
+        Subscriptions subscriptions = Subscriptions.fromXML(bodyResponse);
+        return subscriptions.getSubscription().getId();
+    }
+
+
+    private String getCompleteUrlToSubscriptions() {
+        StringBuilder builder = new StringBuilder(getBaseUrl(host,port,username,password));
+        builder.append("/api/v1.0/subscriptions");
+        return builder.toString();
+    }
+
+
+    private String getCompleteUrlToAddUserToAccount( String accountUsername) {
+        StringBuilder builder = new StringBuilder(getBaseUrlForAccounts(host, port, username, password));
          builder.append(accountUsername).append("/users/").append(accountUsername);
         return builder.toString();
     }
 
-    private String getCompleteUrlToCreateAccount(String host, int port, String username, String password, String accountUsername) {
-        // https://mopda:mopdacol14@vm-sts-coll01:444/api/v1.0/accounts/uMop01
-
-        StringBuilder builder = new StringBuilder(getBaseUrl(host,port,username,password));
+    private String getCompleteUrlToCreateAccount(String accountUsername) {
+        StringBuilder builder = new StringBuilder(getBaseUrlForAccounts(host, port, username, password));
         builder .append(accountUsername);
         return builder.toString();
     }
 
-    private String getBaseUrl(String host,int port,String username,String password) {
+    private String getBaseUrlForAccounts(String host, int port, String username, String password) {
+        StringBuilder builder = new StringBuilder(getBaseUrl(host,port,username,password));
+        builder.append("/api/v1.0/accounts/");
+       return builder.toString();
+    }
+
+    private String getBaseUrl(String host,int port, String username, String password) {
         String typeConnection = useSecureConnection ? "https://" : "http://";
 
         StringBuilder builder = new StringBuilder(typeConnection);
@@ -96,8 +144,8 @@ public class MopHttpClientImpl implements MopHttpClient {
             builder.append(username)
                     .append(":").append(password).append("@");
         }
-        builder.append(host).append(":").append(port).append("/api/v1.0/accounts/");
-       return builder.toString();
+        builder.append(host).append(":").append(port);
+        return builder.toString();
     }
 
 
@@ -108,19 +156,15 @@ public class MopHttpClientImpl implements MopHttpClient {
         return builder.toString();
     }
 
-    private boolean doPut(String url, String content) {
-        try {
-            HttpPut httpPost = new HttpPut(url);
-            httpPost.setHeader("Content-Type","application/xml");
 
-            httpPost.setEntity(new StringEntity(content));
-            httpPost.setConfig( RequestConfig.custom().setConnectTimeout(CONNECTION_TIMEOUT).setSocketTimeout(CONNECTION_TIMEOUT).build());
-            logger.info("PostSent {}", url);
-            HttpActionResponse response = submitHttpRequest(httpPost);
+    private boolean doHttpOpAndValuate(HttpEntityEnclosingRequestBase op, String content) {
+        try {
+
+           HttpActionResponse response = doHttpOp(op, content);
 
             int statusCode = response.getStatusCode();
             if (statusCode != HttpStatus.SC_CREATED && statusCode != HttpStatus.SC_OK) {
-                logger.warn("Operation Failed {} Status {} Reason {} Content {}", url, statusCode, response.getReason(), content);
+                logger.warn("Operation Failed {} Status {} Reason {} Content {}", statusCode, response.getReason(), content);
                 return false;
             }
 
@@ -134,6 +178,39 @@ public class MopHttpClientImpl implements MopHttpClient {
         }
 
         return false;
+    }
+
+    private HttpActionResponse doHttpOp(HttpRequestBase op, String content) throws IOException {
+        op.setHeader("Content-Type","application/xml");
+
+        if(StringUtils.hasText(content)) {
+            ((HttpEntityEnclosingRequestBase) op).setEntity(new StringEntity(content));
+        }
+
+
+        op.setConfig( RequestConfig.custom().setConnectTimeout(CONNECTION_TIMEOUT).setSocketTimeout(CONNECTION_TIMEOUT).build());
+
+        HttpActionResponse response = submitHttpRequest(op);
+
+        return response;
+    }
+
+    private boolean doPut(String url, String content) {
+        return doHttpOpAndValuate(new HttpPut(url), content);
+    }
+
+    private boolean doPost(String url, String content) {
+        return doHttpOpAndValuate(new HttpPost(url), content);
+    }
+
+    private String doGet(String url) {
+        try {
+            HttpActionResponse response = doHttpOp(new HttpGet(url),"");
+            return response.getBody();
+        } catch (IOException e) {
+            logger.error("Unexpected IO Error", e);
+        }
+        return "";
     }
 
 

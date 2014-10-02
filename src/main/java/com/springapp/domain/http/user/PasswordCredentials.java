@@ -1,4 +1,4 @@
-package com.springapp.domain;
+package com.springapp.domain.http.user;
 
 /**
  * Created with IntelliJ IDEA.
