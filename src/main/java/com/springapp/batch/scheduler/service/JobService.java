@@ -51,16 +51,19 @@ public class JobService implements IJobService {
             try {
                 //crea account
                 account = accountService.createAccount(user);
+
+                log.debug("finished processing : ACCOUNT CREATED : {}",account);
+                log.debug("updating user record..");
+                //aggiorna record nel db
+                user.setFlagRichiestaInoltrata(ACCOUNT_FLAG_VALUES.WITH_ACCOUNT.getId());
+                userService.updateUser(user);
+                log.debug("user record updated!");
+
             } catch (AccountCreationException e) {
                 //TODO createMopAccount exception handling
                 e.printStackTrace();
             }
-            log.debug("finished processing : ACCOUNT CREATED : {}",account);
-            log.debug("updating user record..");
-            //aggiorna record nel db
-            user.setFlagRichiestaInoltrata(ACCOUNT_FLAG_VALUES.WITH_ACCOUNT.getId());
-            userService.updateUser(user);
-            log.debug("user record updated!");
+
 
         }
         log.info("process ended...");
