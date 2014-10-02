@@ -4,6 +4,7 @@ import com.springapp.domain.ACCOUNT_FLAG_VALUES;
 import com.springapp.domain.http.account.Account;
 import com.springapp.domain.User;
 import com.springapp.domain.http.subscription.Subscriptions;
+import com.springapp.domain.http.transferconfiguration.TransferConfiguration;
 import com.springapp.domain.http.transferconfiguration.TransferConfigurations;
 import com.springapp.domain.http.user.UserAccount;
 import com.springapp.service.http.MopHttpClientImpl;
@@ -55,13 +56,28 @@ public class AccountServiceImplTest {
         when(mopHttpClient.addUserToMopAccount(Mockito.any(UserAccount.class))).thenReturn(true);
         when(mopHttpClient.createSubscriptionForTheUser(any(Subscriptions.class))).thenReturn(true);
         when(mopHttpClient.getSubscriptionIdForTheUser("RoutingToMOP","brnrcc80l13g786I")).thenReturn("subId");
+        when(mopHttpClient.getSubscriptionIdForTheUser("RoutingFromMOP","brnrcc80l13g786I")).thenReturn("subId");
         when(mopHttpClient.createTransferConfigurationForTheUser(new TransferConfigurations(),"subId")).thenReturn(true);
-       Account account = accountService.createAccount(user);
+
+        TransferConfigurations transferConfigurations = new TransferConfigurations();
+        TransferConfiguration transferConfiguration = new TransferConfiguration();
+        transferConfiguration.setDirection(1);
+        transferConfiguration.setSite("TS_FTP_RoutingMOP");
+        transferConfiguration.setTag("PARTNER-OUT");
+        transferConfigurations.setTransferConfiguration(transferConfiguration);
+        when(mopHttpClient.createTransferConfigurationForTheUser(transferConfigurations,"subId")).thenReturn(true);
+
+
+        Account account = accountService.createAccount(user);
            verify(mopHttpClient,times(1)).createMopAccount(any(Account.class));
         verify(mopHttpClient,times(1)).addUserToMopAccount(any(UserAccount.class));
-        verify(mopHttpClient,times(1)).createSubscriptionForTheUser(any(Subscriptions.class));
+        verify(mopHttpClient,times(2)).createSubscriptionForTheUser(any(Subscriptions.class));
         verify(mopHttpClient,times(1)).getSubscriptionIdForTheUser("RoutingToMOP", "brnrcc80l13g786I");
+        verify(mopHttpClient,times(1)).getSubscriptionIdForTheUser("RoutingFromMOP", "brnrcc80l13g786I");
+
         verify(mopHttpClient,times(1)) .createTransferConfigurationForTheUser(new TransferConfigurations(),"subId");
+        verify(mopHttpClient,times(1)) .createTransferConfigurationForTheUser(transferConfigurations,"subId");
+
         assertNotNull(account);
         assertEquals("brnrcc80l13g786I",account.getName());
         assertEquals("rocco@msn.com",account.getContact().getEmail());
