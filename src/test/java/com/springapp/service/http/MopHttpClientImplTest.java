@@ -50,7 +50,7 @@ public class MopHttpClientImplTest {
 
     @BeforeClass
     public static void startProxy() {
-        server = ClientAndServer.startClientAndServer(9111);
+        server = ClientAndServer.startClientAndServer(9111,9999);
 
     }
 
@@ -98,7 +98,7 @@ public class MopHttpClientImplTest {
 
 
         HttpRequest request = HttpRequest.request().withMethod("PUT").withPath("/api/v1.0/accounts/uMop01").withBody(xmlExpected);
-        mopHttpClient.setUseSecureConnection(false);
+//        mopHttpClient.setUseSecureConnection(false);
 
 
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
@@ -115,7 +115,7 @@ public class MopHttpClientImplTest {
                 new Parameter("limit","1")).withQueryStringParameter(new Parameter("application","RoutingToMOP"))
                 .withQueryStringParameter(new Parameter("account","uMop01")
         );
-        mopHttpClient.setUseSecureConnection(false);
+//        mopHttpClient.setUseSecureConnection(false);
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_OK).withBody("<subscriptions>" +
                 "<subscription><id>8aa6c33c477cf5b00148ad4c770801d2</id><account>uMop01</account>" +
                 "<application>RoutingToMOP</application>" +
@@ -157,7 +157,7 @@ public class MopHttpClientImplTest {
                 "</subscriptions>";
 
         HttpRequest request = HttpRequest.request().withMethod("POST").withPath("/api/v1.0/subscriptions").withBody(xmlTomatch);
-        mopHttpClient.setUseSecureConnection(false);
+//        mopHttpClient.setUseSecureConnection(false);
 
 
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
@@ -181,7 +181,7 @@ public class MopHttpClientImplTest {
                 "</transferConfigurations>";
 
         HttpRequest request = HttpRequest.request().withMethod("POST").withPath("/api/v1.1/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/transferConfigurations").withBody(xmlToMatch);
-        mopHttpClient.setUseSecureConnection(false);
+//        mopHttpClient.setUseSecureConnection(false);
 
 
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
@@ -223,7 +223,7 @@ public class MopHttpClientImplTest {
                 "</user>";
 
         HttpRequest request = HttpRequest.request().withMethod("PUT").withPath("/api/v1.0/accounts/uMop01/users/uMop01").withBody(xmlTomatch);
-        mopHttpClient.setUseSecureConnection(false);
+//        mopHttpClient.setUseSecureConnection(false);
 
 
         server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_CREATED).withBody("ok"));
