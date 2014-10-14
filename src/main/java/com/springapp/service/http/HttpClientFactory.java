@@ -44,6 +44,9 @@ public class HttpClientFactory {
     private String connectionUsername;
     @Value("${mop.password}")
     private String connectionPassword;
+    @Value("${mop.useHttps}")
+    private boolean useHttps;
+
 
 
 
@@ -51,63 +54,79 @@ public class HttpClientFactory {
 
     public CloseableHttpClient createPooledConnectionHttpClient(int maxTotalConnections, int maxConnectionsPerHost) {
 
+        if(useHttps) {
+        // AUTH+SSL
         SSLContextBuilder builder = SSLContexts.custom();
         Registry<ConnectionSocketFactory> socketFactoryRegistry = null;
-        try {
-            builder.loadTrustMaterial(null, new TrustStrategy() {
-                @Override
-                public boolean isTrusted(X509Certificate[] chain, String authType)
-                        throws CertificateException {
-                    return true;
+                try {
+                    builder.loadTrustMaterial(null, new TrustStrategy() {
+                        @Override
+                        public boolean isTrusted(X509Certificate[] chain, String authType)
+                                throws CertificateException {
+                            return true;
+                        }
+                    });
+
+                    SSLContext sslContext = builder.build();
+                    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                            sslContext, new X509HostnameVerifier() {
+                        @Override
+                        public void verify(String host, SSLSocket ssl)
+                                throws IOException {
+                        }
+
+                        @Override
+                        public void verify(String host, X509Certificate cert)
+                                throws SSLException {
+                        }
+
+                        @Override
+                        public void verify(String host, String[] cns,
+                                           String[] subjectAlts) throws SSLException {
+                        }
+
+                        @Override
+                        public boolean verify(String s, SSLSession sslSession) {
+                            return true;
+                        }
+                    });
+
+                    socketFactoryRegistry = RegistryBuilder
+                            .<ConnectionSocketFactory>create().register("https", sslsf)
+                            .build();
+
+
+                    PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+                    poolingHttpClientConnectionManager.setMaxTotal(maxTotalConnections);
+                    poolingHttpClientConnectionManager.setDefaultMaxPerRoute(maxConnectionsPerHost);
+
+                    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(
+                            new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+                            new UsernamePasswordCredentials(connectionUsername, connectionPassword));
+
+                    return HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).setSSLSocketFactory(sslsf)
+
+                            .setConnectionManager(poolingHttpClientConnectionManager).build();
+
+
+
+                } catch (NoSuchAlgorithmException e) {
+                    logger.error("Error in creating HttpCLient Connection : {}",e);
+                } catch (KeyStoreException e) {
+                    logger.error("Error in creating HttpCLient Connection : {}",e);
+                } catch (KeyManagementException e) {
+                    logger.error("Error in creating HttpCLient Connection : {}",e);
                 }
-            });
 
-            SSLContext sslContext = builder.build();
-            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-                    sslContext, new X509HostnameVerifier() {
-                @Override
-                public void verify(String host, SSLSocket ssl)
-                        throws IOException {
-                }
+        } else {
+            //no auth no SSL
 
-                @Override
-                public void verify(String host, X509Certificate cert)
-                        throws SSLException {
-                }
-
-                @Override
-                public void verify(String host, String[] cns,
-                                   String[] subjectAlts) throws SSLException {
-                }
-
-                @Override
-                public boolean verify(String s, SSLSession sslSession) {
-                    return true;
-                }
-            });
-
-          socketFactoryRegistry = RegistryBuilder
-                    .<ConnectionSocketFactory> create().register("https", sslsf)
-                    .build();
-
-            PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+            PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
             poolingHttpClientConnectionManager.setMaxTotal(maxTotalConnections);
             poolingHttpClientConnectionManager.setDefaultMaxPerRoute(maxConnectionsPerHost);
 
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(
-                    new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
-                    new UsernamePasswordCredentials(connectionUsername, connectionPassword));
-
-            return HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).setSSLSocketFactory(sslsf)
-                    .setConnectionManager(poolingHttpClientConnectionManager).build();
-
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Error in creating HttpCLient Connection : {}",e);
-        } catch (KeyStoreException e) {
-            logger.error("Error in creating HttpCLient Connection : {}",e);
-        } catch (KeyManagementException e) {
-            logger.error("Error in creating HttpCLient Connection : {}",e);
+            return HttpClients.custom().setConnectionManager(poolingHttpClientConnectionManager).build();
         }
 
 

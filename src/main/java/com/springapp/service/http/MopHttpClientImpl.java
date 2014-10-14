@@ -47,13 +47,14 @@ public class MopHttpClientImpl implements MopHttpClient {
                              @Value("${mop.username}")String username,
                              @Value("${mop.password}")String password,
                              HttpClientFactory httpClientFactory,
-                             @Value("${mop.connection.timeout}") int connection_timeout) {
+                             @Value("${mop.connection.timeout}") int connection_timeout,@Value("${mop.useHttps}") boolean useHttps) {
         this.host = host;
         this.port = port;
         this.username = username;
         this.password = password;
         this.CONNECTION_TIMEOUT = connection_timeout;
         this.httpClient = httpClientFactory.createPooledConnectionHttpClient(connectionPoolMax, connectionPoolMaxPerRoute);
+        this.useSecureConnection = useHttps;
 
     }
 
