@@ -116,22 +116,13 @@ public class MopHttpClientImplTest {
                 .withQueryStringParameter(new Parameter("account","uMop01")
         );
 //        mopHttpClient.setUseSecureConnection(false);
-        server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_OK).withBody("<subscriptions>" +
-                "<subscription><id>8aa6c33c477cf5b00148ad4c770801d2</id><account>uMop01</account>" +
-                "<application>RoutingToMOP</application>" +
-                "<subscriberID>uMop01</subscriberID>" +
-                "<folder>/Outbox</folder>" +
-                "<pta.on.success.OUT.do.delete>true</pta.on.success.OUT.do.delete>" +
-                "<metadata>" +
-                "<links>" +
-                "<account>https://vm-sts-coll01:444/api/v1.0/accounts/uMop01</account>" +
-                "<application>https://vm-sts-coll01:444/api/v1.0/applications/RoutingToMOP</application>" +
-                "<transferConfigurations>https://vm-sts-coll01:444/api/v1.0/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/transferConfigurations</transferConfigurations>" +
-                "<schedules>https://vm-sts-coll01:444/api/v1.0/subscriptions/8aa6c33c477cf5b00148ad4c770801d2/schedules</schedules>" +
-                "</links>" +
-                "</metadata>" +
-                "</subscription>" +
-                "</subscriptions>"));
+        server.when(request).respond(new HttpResponse().withStatusCode(HttpStatus.SC_OK).withBody("{\"subscriptions\":[{" +
+                " \"application\":\"RoutingToMOP\"," +
+                " \"subscriberID\":\"uMop01\",\"folder\":\"/Outbox\",\"pta.on.success.OUT.do.delete\":\"true\"," +
+                " \"account\":\"uMop01\"," +
+                " \"id\":\"8aa6c33c477cf5b00148ad4c770801d2\"," +
+                "\"metadata\":{" +
+                "} }] }"));
 
         String id = mopHttpClient.getSubscriptionIdForTheUser("RoutingToMOP","uMop01");
         assertEquals("8aa6c33c477cf5b00148ad4c770801d2",id);

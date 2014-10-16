@@ -107,8 +107,9 @@ public class MopHttpClientImpl implements MopHttpClient {
         builder.append("?limit=1&application=").append(application)
                 .append("&account=").append(accountName);
         String bodyResponse = doGet(builder.toString());
-        Subscriptions subscriptions = Subscriptions.fromXML(bodyResponse);
-        return subscriptions.getSubscription().getId();
+        com.springapp.domain.http.subscription.json.Subscriptions subscriptions =
+                com.springapp.domain.http.subscription.json.Subscriptions.fromJson(bodyResponse);
+        return subscriptions.getSubscriptions().get(0).getId();
     }
 
 
